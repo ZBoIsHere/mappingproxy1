@@ -1,0 +1,3 @@
+<launch>
+    <node pkg="mappingproxy" type="mapcontroller" name="mapcontroller"  output="screen" required="true"/>
+</launch>
