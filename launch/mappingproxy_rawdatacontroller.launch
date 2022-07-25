@@ -1,0 +1,3 @@
+<launch>
+    <node pkg="mappingproxy" type="rawdatacontroller" name="rawdatacontroller"  output="screen" required="true"/>
+</launch>
