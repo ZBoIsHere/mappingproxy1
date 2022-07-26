@@ -11,12 +11,21 @@ ros::Publisher rawdata_started_pub;
 ros::Publisher rawdata_finished_pub;
 ros::Subscriber algorithm_started_sub;
 
+const char* ENV_RWADATAFILE = "RAWDATAFILE";
+char* rawdata_file;
+
 void rawdataPlayCountdown();
 
 int main(int argc, char** argv) {
     ROS_INFO("rawdata controller start");
     ros::init(argc, argv, "rawdatacontroller", ros::init_options::AnonymousName);
     ros::NodeHandle nh;
+
+    rawdata_file = getenv(ENV_RWADATAFILE);
+    if (rawdata_file == nullptr) {
+        ROS_ERROR("Can not get env %s", ENV_RWADATAFILE);
+    }
+
     // todo zhangbo how to set reasonable queue_size
     rawdata_started_pub = nh.advertise<std_msgs::String>("rawdata_started_pub", 100);
     rawdata_finished_pub = nh.advertise<std_msgs::String>("rawdata_finished_pub", 100);
@@ -27,7 +36,7 @@ int main(int argc, char** argv) {
 
 void algorithmStatusCallback(const std_msgs::String::ConstPtr& msg) {
     rosbag::Bag bag;
-    bag.open("/root/rosbag/test.bag", rosbag::bagmode::Read);
+    bag.open(rawdata_file, rosbag::bagmode::Read);
     rosbag::View view(bag);
     auto bag_length_time = view.getEndTime() - view.getBeginTime();
     auto bag_length_time2sec = bag_length_time.toSec();
@@ -43,7 +52,7 @@ void algorithmStatusCallback(const std_msgs::String::ConstPtr& msg) {
 void rawdataPlayCountdown() {
     // todo zhangbo why when bag play finished the main process exit
     rosbag::PlayerOptions opts;
-    opts.bags.push_back(std::string("/root/rosbag/test.bag"));
+    opts.bags.push_back(std::string(rawdata_file));
     rosbag::Player player(opts);
     try {
         std_msgs::String rawdata_status;
