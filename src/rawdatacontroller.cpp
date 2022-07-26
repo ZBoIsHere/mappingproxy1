@@ -7,8 +7,9 @@
 #include "rosbag/view.h"
 #include "thread"
 
-ros::Publisher rawdata_status_pub;
-ros::Subscriber algorithm_status_sub;
+ros::Publisher rawdata_started_pub;
+ros::Publisher rawdata_finished_pub;
+ros::Subscriber algorithm_started_sub;
 
 void rawdataPlayCountdown();
 
@@ -17,8 +18,9 @@ int main(int argc, char** argv) {
     ros::init(argc, argv, "rawdatacontroller", ros::init_options::AnonymousName);
     ros::NodeHandle nh;
     // todo zhangbo how to set reasonable queue_size
-    rawdata_status_pub = nh.advertise<std_msgs::String>("rawdata_status", 100);
-    algorithm_status_sub = nh.subscribe("algorithm_status", 100, algorithmStatusCallback);
+    rawdata_started_pub = nh.advertise<std_msgs::String>("rawdata_started_pub", 100);
+    rawdata_finished_pub = nh.advertise<std_msgs::String>("rawdata_finished_pub", 100);
+    algorithm_started_sub = nh.subscribe("algorithm_started_pub", 100, algorithmStatusCallback);
     ros::spin();
     return 0;
 }
@@ -33,7 +35,7 @@ void algorithmStatusCallback(const std_msgs::String::ConstPtr& msg) {
     ros::Duration(bag_length_time2sec - 3).sleep();
     std_msgs::String rawdata_status;
     rawdata_status.data = "FINISHED";
-    rawdata_status_pub.publish(rawdata_status);
+    rawdata_finished_pub.publish(rawdata_status);
     ROS_INFO("rawdata play finished");
     thr1.join();
 }
@@ -46,7 +48,7 @@ void rawdataPlayCountdown() {
     try {
         std_msgs::String rawdata_status;
         rawdata_status.data = "STARTED";
-        rawdata_status_pub.publish(rawdata_status);
+        rawdata_started_pub.publish(rawdata_status);
         ROS_INFO("rawdata play started");
         player.publish();
     }

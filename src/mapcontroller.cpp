@@ -5,36 +5,34 @@
 #include <sensor_msgs/PointCloud2.h>
 #include <pcl_conversions/pcl_conversions.h>
 
+ros::Subscriber colored_pointcloud_sub;
+ros::Subscriber uncolored_pointcloud_sub;
 
-void clouda_cb(const sensor_msgs::PointCloud2ConstPtr& input);
+void colored_pointcloud_callback(const sensor_msgs::PointCloud2::ConstPtr & input);
+void uncolored_pointcloud_callback(const sensor_msgs::PointCloud2::ConstPtr & input);
 
 int main(int argc, char** argv) {
-    ros::init (argc, argv, "mapproxy");
+    ROS_INFO("map controller start");
+    ros::init (argc, argv, "mapcontroller", ros::init_options::AnonymousName);
     ros::NodeHandle nh;
 
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr clouda_ptr (new pcl::PointCloud<pcl::PointXYZRGB>);
-    if (pcl::io::loadPCDFile<pcl::PointXYZRGB> ("/root/rosbag/rgb_pt.pcd", *clouda_ptr) == -1) {
-        PCL_ERROR ("Couldn't read file pcl_2_pcd1.pcd ^.^\n");
-        return (-1);
-    }
-    std::cerr << "size of a : " << clouda_ptr->width*clouda_ptr->height<< std::endl;
-
-    sensor_msgs::PointCloud2 clouda_ros;
-    pcl::toROSMsg (*clouda_ptr, clouda_ros);
-
-    ros::Publisher puba = nh.advertise<sensor_msgs::PointCloud2> ("clouda", 1);
-    ros::Subscriber suba = nh.subscribe("clouda", 1, clouda_cb);
-
-    clouda_ros.header.stamp = ros::Time::now();
-    clouda_ros.header.frame_id = "sensor_framea";
-    puba.publish(clouda_ros);
+    colored_pointcloud_sub = nh.subscribe("colored_pointcloud_pub", 100, colored_pointcloud_callback);
+    uncolored_pointcloud_sub = nh.subscribe("uncolored_pointcloud_pub", 100, uncolored_pointcloud_callback);
 
     ros::spin();
     return 0;
 }
 
-void clouda_cb(const sensor_msgs::PointCloud2ConstPtr& input) {
+void colored_pointcloud_callback(const sensor_msgs::PointCloud2::ConstPtr& input) {
     pcl::PointCloud<pcl::PointXYZRGB> output_ptr ;
+    pcl::fromROSMsg(*input, output_ptr);
+    if(pcl::io::savePCDFileASCII("/root/rosbag/test.pcd", output_ptr) == 0) {
+        ROS_INFO("save pcd file success");
+    }
+}
+
+void uncolored_pointcloud_callback(const sensor_msgs::PointCloud2::ConstPtr& input) {
+    pcl::PointCloud<pcl::PointXYZI> output_ptr ;
     pcl::fromROSMsg(*input, output_ptr);
     if(pcl::io::savePCDFileASCII("/root/rosbag/test.pcd", output_ptr) == 0) {
         ROS_INFO("save pcd file success");
