@@ -59,6 +59,7 @@ void colored_pointcloud_callback(const sensor_msgs::PointCloud2::ConstPtr& input
 
     if(pcl::io::savePCDFileBinary(pcd_file, output_ptr) == 0) {
         ROS_INFO("save pcd file success");
+        ros::shutdown();
     }
 }
 
