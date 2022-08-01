@@ -1,0 +1,4 @@
+<launch>
+    <node pkg="mappingproxy" type="mapcontroller" name="mapcontroller"  output="screen" required="true"/>
+    <node pkg="mappingproxy" type="rawdatacontroller" name="rawdatacontroller"  output="screen" required="true"/>
+</launch>
